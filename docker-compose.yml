@@ -3,7 +3,6 @@ version: "3.8"
 services:
   minecraft:
     build:
-      context: ./image
       dockerfile: Containerfile
     container_name: re-avaritia-mc
     ports:
