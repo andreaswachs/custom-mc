@@ -14,7 +14,7 @@ if [ ! -f /data/server.properties ]; then
 enable-jmx-monitoring=false
 rcon.port=25575
 level-seed=
-gamemode=survival
+gamemode=creative
 enable-command-block=false
 enable-query=false
 generator-settings={}
@@ -65,6 +65,17 @@ max-world-size=29999984
 PROPS
 
     echo "eula=true" > /data/eula.txt
+
+    cat > /data/ops.json << 'OPS'
+[
+  {
+    "uuid": "94a648c3-b81a-4ff1-878f-30a88694a59c",
+    "name": "hektor7591",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  }
+]
+OPS
 fi
 
 # Ensure libraries symlink exists (re-create if missing)
