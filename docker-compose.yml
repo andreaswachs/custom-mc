@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  minecraft:
+    build:
+      context: ./image
+      dockerfile: Containerfile
+    container_name: re-avaritia-mc
+    ports:
+      - "25565:25565/tcp"
+      - "25565:25565/udp"
+    volumes:
+      - mc-data:/data
+    environment:
+      MIN_RAM: "2G"
+      MAX_RAM: "4G"
+    healthcheck:
+      test: ["CMD-SHELL", "ss -tln | grep -q ':25565 '"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+volumes:
+  mc-data:
