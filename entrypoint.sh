@@ -6,6 +6,9 @@ echo "=== Initializing Minecraft server ==="
 # Ensure PVC directories exist
 mkdir -p /data/world /data/logs
 
+# Remove any pre-existing real directories so symlinks work correctly
+rm -rf /server/world /server/logs
+
 # Symlink world and logs to PVC
 ln -sfn /data/world /server/world
 ln -sfn /data/logs /server/logs
@@ -34,7 +37,7 @@ gamemode=creative
 enable-command-block=false
 enable-query=false
 generator-settings={}
-level-name=/data/world
+level-name=world
 motd=Re-Avaritia Server
 query.port=25565
 pvp=true
