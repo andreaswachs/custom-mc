@@ -52,6 +52,7 @@ RUN useradd -m -s /bin/bash minecraft
 # Copy server files from builder
 COPY --from=builder /build/libraries /server/libraries
 COPY --from=builder /build/user_jvm_args.txt /server/
+COPY --from=builder /build/mods /server/mods
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
