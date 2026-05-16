@@ -1,16 +1,32 @@
 #!/bin/sh
 set -e
 
-# Initialize /data on first run
-if [ ! -f /data/server.properties ]; then
-    echo "=== First run: initializing server data ==="
-    mkdir -p /data/mods
-    cp /defaults/mods/* /data/mods/ 2>/dev/null || true
+echo "=== Initializing Minecraft server ==="
 
-    # Symlink libraries so Forge can find them from /data
-    ln -sf /server/libraries /data/libraries
+# Ensure PVC directories exist
+mkdir -p /data/world /data/logs
 
-    cat > /data/server.properties << 'PROPS'
+# Symlink world and logs to PVC
+ln -sfn /data/world /server/world
+ln -sfn /data/logs /server/logs
+
+# Apply config: prefer /config overrides, else write defaults
+apply_config() {
+    local file=$1
+    if [ -f "/config/${file}" ]; then
+        echo "Using ConfigMap override for ${file}"
+        cp "/config/${file}" "/server/${file}"
+    elif [ ! -f "/server/${file}" ]; then
+        echo "Writing default ${file}"
+        write_default "${file}"
+    fi
+}
+
+write_default() {
+    local file=$1
+    case "${file}" in
+        server.properties)
+            cat > /server/server.properties << 'PROPS'
 enable-jmx-monitoring=false
 rcon.port=25575
 level-seed=
@@ -18,7 +34,7 @@ gamemode=creative
 enable-command-block=false
 enable-query=false
 generator-settings={}
-level-name=world
+level-name=/data/world
 motd=Re-Avaritia Server
 query.port=25565
 pvp=true
@@ -63,10 +79,9 @@ resource-pack-sha1=
 spawn-protection=16
 max-world-size=29999984
 PROPS
-
-    echo "eula=true" > /data/eula.txt
-
-    cat > /data/ops.json << 'OPS'
+            ;;
+        ops.json)
+            cat > /server/ops.json << 'OPS'
 [
   {
     "uuid": "94a648c3-b81a-4ff1-878f-30a88694a59c",
@@ -76,12 +91,16 @@ PROPS
   }
 ]
 OPS
-fi
+            ;;
+        eula.txt)
+            echo "eula=true" > /server/eula.txt
+            ;;
+    esac
+}
 
-# Ensure libraries symlink exists (re-create if missing)
-if [ ! -d /data/libraries ]; then
-    ln -sf /server/libraries /data/libraries
-fi
+apply_config server.properties
+apply_config ops.json
+apply_config eula.txt
 
 # Set memory limits from env or default
 MIN_RAM=${MIN_RAM:-2G}
@@ -90,7 +109,7 @@ MAX_RAM=${MAX_RAM:-4G}
 FORGE_ARGS="@libraries/net/minecraftforge/forge/1.20.1-47.4.20/unix_args.txt"
 
 echo "Starting Forge server with ${MAX_RAM} max RAM..."
-cd /data
+cd /server
 exec java -Xms${MIN_RAM} -Xmx${MAX_RAM} \
     -XX:+UseG1GC \
     -XX:+ParallelRefProcEnabled \
