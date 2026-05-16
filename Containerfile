@@ -52,18 +52,16 @@ RUN useradd -m -s /bin/bash minecraft
 # Copy server files from builder
 COPY --from=builder /build/libraries /server/libraries
 COPY --from=builder /build/user_jvm_args.txt /server/
-COPY --from=builder /build/mods /defaults/mods
 
 # Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh && chown minecraft:minecraft /entrypoint.sh
 
 # Create data directory
-RUN mkdir -p /data /defaults && chown -R minecraft:minecraft /server /data /defaults
+RUN mkdir -p /data && chown -R minecraft:minecraft /server /data
 
 USER minecraft
 
-VOLUME ["/data"]
 EXPOSE 25565
 
 ENTRYPOINT ["/entrypoint.sh"]
